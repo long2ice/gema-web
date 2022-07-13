@@ -1,8 +1,6 @@
-import { Language } from "prism-react-renderer";
-
 interface Info {
   source: string[];
-  dest: Record<Language | "rust", Array<string>>;
+  dest: Record<string, Array<string>>;
 }
 
 export type { Info };
