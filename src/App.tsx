@@ -1,21 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { convert, getInfo } from "./api";
-import { Info } from "./types";
-import MonacoEditor from "react-monaco-editor";
+import { Info, Language } from "./types";
+import Editor from "@monaco-editor/react";
 import { BsTrash, BsUpload } from "react-icons/bs";
 import { FiSettings } from "react-icons/fi";
+import { BiCopy } from "react-icons/bi";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import * as monaco from "monaco-editor";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { IoIosRefresh } from "react-icons/io";
+import defaultValues from "./constants";
+import LanguageIcons from "./icons";
 
-const defaultJson = `{
-  "author": "long2ice",
-  "repo": "https://github.com/long2ice/gema"
-}`;
 const App = () => {
-  const [source, setSource] = useState(defaultJson);
-  const [dest, setDest] = useState("");
+  const [dest, setDest] = useState<string | undefined>("");
   const [language, setLanguage] = useState("python");
   const [destType, setDestType] = useState("pydantic");
   const [sourceType, setSourceType] = useState("json");
+  const [source, setSource] = useState<string | undefined>(
+    defaultValues[sourceType]
+  );
   const [info, setInfo] = useState<Info>();
+  const inputRef = useRef(null);
+  const editorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+    minimap: {
+      enabled: false,
+    },
+    fontSize: 15,
+  };
+  const uploadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const reader = new FileReader();
+    // @ts-ignore
+    reader.readAsText(e.target.files[0], "UTF-8");
+    reader.onload = (e) => {
+      setSource(e.target?.result as string);
+    };
+  };
   useEffect(() => {
     (async () => {
       let info: Info = await getInfo();
@@ -24,11 +45,13 @@ const App = () => {
   }, []);
   useEffect(() => {
     (async () => {
-      let data = await convert(sourceType, source, language, destType);
+      let data = await convert(sourceType, source ?? "", language, destType);
       setDest(data.content);
     })();
   }, [destType, language, source, sourceType]);
 
+  // @ts-ignore
+  // @ts-ignore
   return (
     <div className="min-h-screen">
       <div className="bg-blue-600">
@@ -36,56 +59,128 @@ const App = () => {
       </div>
       <div className="flex">
         <div className="w-[12%]">
-          <div className="p-4">Json</div>
-          <ul className="menu bg-base-100 w-full">
-            <li>pydantic</li>
-            <li>dataclass</li>
+          <ul className="menu">
+            <li className="border-b">
+              <select
+                onChange={(e) => {
+                  let value = e.target.value.toLowerCase();
+                  setSourceType(value);
+                  setSource(defaultValues[value]);
+                }}
+              >
+                {info?.source.map((item) => {
+                  return (
+                    <option key={item}>
+                      {item.charAt(0).toUpperCase() + item.slice(1)}
+                    </option>
+                  );
+                })}
+              </select>
+            </li>
+            {info &&
+              Object.entries(info.dest).map((k) => {
+                return k[1].map((type) => {
+                  return (
+                    <li
+                      key={`${k[0]} - ${type}`}
+                      className={
+                        type === destType && k[0] === language ? "bordered" : ""
+                      }
+                      onClick={() => {
+                        setLanguage(k[0]);
+                        setDestType(type);
+                      }}
+                    >
+                      <div className="capitalize">
+                        <LanguageIcons language={k[0] as Language} />
+                        {type === k[0] ? type : `${k[0]} - ${type}`}
+                      </div>
+                    </li>
+                  );
+                });
+              })}
           </ul>
         </div>
-        <div className="flex grow">
+        <div className="flex grow border-l">
           <div className="basis-1/2">
-            <div className="flex p-2">
-              <div className="grow">Json</div>
+            <div className="flex p-2 border-b">
+              <div className="grow capitalize font-bold">{sourceType}</div>
               <div className="flex gap-1">
-                <button className="btn btn-outline gap-2 btn-xs rounded">
+                <button
+                  className="btn btn-outline gap-2 btn-xs rounded"
+                  onClick={() => {
+                    toast("Coming soon!");
+                  }}
+                >
                   <FiSettings />
                   Settings
                 </button>
-                <button className="btn btn-outline btn-xs rounded">
+                <button
+                  className="btn btn-outline btn-xs rounded"
+                  onClick={() => {
+                    // @ts-ignore
+                    inputRef.current.click();
+                  }}
+                >
+                  <input
+                    className="hidden"
+                    ref={inputRef}
+                    type="file"
+                    onChange={uploadFile}
+                  />
                   <BsUpload />
                 </button>
-                <button className="btn btn-outline btn-xs rounded">
+                <button
+                  className="btn btn-outline btn-xs rounded"
+                  onClick={() => setSource(defaultValues[sourceType])}
+                >
+                  <IoIosRefresh />
+                </button>
+                <button
+                  className="btn btn-outline btn-xs rounded"
+                  onClick={() => setSource("")}
+                >
                   <BsTrash />
                 </button>
               </div>
             </div>
-            <MonacoEditor
+            <Editor
+              height="90vh"
               value={source}
-              onChange={(value) => {
+              onChange={(value, e) => {
                 setSource(value);
               }}
-              language="json"
-              width="100%"
-              height="100%"
+              language={sourceType}
+              options={editorOptions}
             />
           </div>
-          <div className="basis-1/2">
-            <div className="flex p-2">
-              <div className="grow">Pydantic</div>
-              <div className="flex gap-2">
-                <button className="btn btn-outline btn-xs rounded">
-                  <BsUpload />
-                </button>
-                <button className="btn btn-outline btn-xs rounded">
-                  <BsTrash />
-                </button>
+          <div className="basis-1/2 border-l">
+            <div className="flex p-2 border-b">
+              <div className="grow capitalize font-bold">
+                {language === destType ? language : `${language} - ${destType}`}
               </div>
+              <CopyToClipboard
+                text={dest ?? ""}
+                onCopy={() => {
+                  toast("😄 Copied to clipboard!");
+                }}
+              >
+                <div>
+                  <button className="btn btn-outline gap-2 btn-xs rounded">
+                    <BiCopy />
+                    Copy
+                  </button>
+                  <ToastContainer position="top-center" autoClose={3000} />
+                </div>
+              </CopyToClipboard>
             </div>
-            <MonacoEditor
+            <Editor
+              height="90vh"
+              options={editorOptions}
               value={dest}
-              onChange={(value) => setDest(value)}
-              width="100%"
-              height="100%"
+              onChange={(value, _) => {
+                setDest(value);
+              }}
               language={language}
             />
           </div>

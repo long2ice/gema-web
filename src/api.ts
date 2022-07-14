@@ -6,6 +6,9 @@ async function convert(
   language: string,
   dest_type: string
 ) {
+  if (content === "") {
+    return "";
+  }
   const response = await axios.post(`/convert`, {
     source_type,
     content,

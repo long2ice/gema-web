@@ -1,6 +1,12 @@
+type Language = "python" | "go" | "rust" | "typescript";
+
 interface Info {
   source: string[];
-  dest: Record<string, Array<string>>;
+  dest: Record<Language, Array<string>>;
 }
 
-export type { Info };
+interface LanguageProps {
+  language: Language;
+}
+
+export type { Info, Language, LanguageProps };
