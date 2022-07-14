@@ -11,12 +11,13 @@ import "react-toastify/dist/ReactToastify.css";
 import { IoIosRefresh } from "react-icons/io";
 import defaultValues from "./constants";
 import LanguageIcons from "./icons";
+import localforage from "localforage";
 
 const App = () => {
-  const [dest, setDest] = useState<string | undefined>("");
   const [language, setLanguage] = useState("python");
   const [destType, setDestType] = useState("pydantic");
   const [sourceType, setSourceType] = useState("json");
+  const [dest, setDest] = useState<string | undefined>("");
   const [source, setSource] = useState<string | undefined>(
     defaultValues[sourceType]
   );
@@ -37,12 +38,30 @@ const App = () => {
     };
   };
   useEffect(() => {
+    localforage.getItem("language").then((v) => {
+      if (v !== null) {
+        setLanguage(v as string);
+      }
+    });
+    localforage.getItem("destType").then((v) => {
+      if (v !== null) {
+        setDestType(v as string);
+      }
+    });
+    localforage.getItem("sourceType").then((v) => {
+      if (v !== null) {
+        setSourceType(v as string);
+      }
+    });
     (async () => {
       let info: Info = await getInfo();
       setInfo(info);
     })();
   }, []);
   useEffect(() => {
+    localforage.setItem("language", language).then();
+    localforage.setItem("sourceType", sourceType).then();
+    localforage.setItem("destType", destType).then();
     (async () => {
       let data = await convert(sourceType, source ?? "", language, destType);
       setDest(data.content);
@@ -118,7 +137,7 @@ const App = () => {
                 <button
                   className="btn btn-outline gap-2 btn-xs rounded"
                   onClick={() => {
-                    toast("Coming soon!");
+                    toast("😘 Coming soon!");
                   }}
                 >
                   <FiSettings />
