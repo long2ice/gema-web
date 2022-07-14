@@ -6,7 +6,6 @@ import { BsTrash, BsUpload } from "react-icons/bs";
 import { FiSettings } from "react-icons/fi";
 import { BiCopy } from "react-icons/bi";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import * as monaco from "monaco-editor";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { IoIosRefresh } from "react-icons/io";
@@ -23,7 +22,7 @@ const App = () => {
   );
   const [info, setInfo] = useState<Info>();
   const inputRef = useRef(null);
-  const editorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+  const editorOptions = {
     minimap: {
       enabled: false,
     },
@@ -50,12 +49,22 @@ const App = () => {
     })();
   }, [destType, language, source, sourceType]);
 
-  // @ts-ignore
-  // @ts-ignore
   return (
     <div className="min-h-screen">
-      <div className="bg-blue-600">
-        <div className="text-xl py-2 pl-4 text-white font-bold">Gema</div>
+      <div className="flex bg-blue-600 py-2 px-4">
+        <div className="text-xl text-white font-bold">Gema</div>
+        <div className="ml-auto pt-1">
+          <a
+            href="https://github.com/long2ice/gema-web"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              alt="GitHub Repo stars"
+              src="https://img.shields.io/github/stars/long2ice/gema-web?style=social"
+            />
+          </a>
+        </div>
       </div>
       <div className="flex">
         <div className="w-[12%]">
