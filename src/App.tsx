@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { convert, getInfo } from "./api";
-import { Info, Language } from "./types";
+import { Info, Language, SourceType } from "./types";
 import Editor from "@monaco-editor/react";
 import { BsTrash, BsUpload } from "react-icons/bs";
 import { FiSettings } from "react-icons/fi";
@@ -10,7 +10,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { IoIosRefresh } from "react-icons/io";
 import defaultValues from "./constants";
-import LanguageIcons from "./icons";
+import { LanguageIcons, SourceTypeIcons } from "./icons";
 import localforage from "localforage";
 
 const App = () => {
@@ -18,9 +18,7 @@ const App = () => {
   const [destType, setDestType] = useState("pydantic");
   const [sourceType, setSourceType] = useState("json");
   const [dest, setDest] = useState<string | undefined>("");
-  const [source, setSource] = useState<string | undefined>(
-    defaultValues[sourceType]
-  );
+  const [source, setSource] = useState<string | undefined>();
   const [info, setInfo] = useState<Info>();
   const inputRef = useRef(null);
   const editorOptions = {
@@ -51,6 +49,7 @@ const App = () => {
     localforage.getItem("sourceType").then((v) => {
       if (v !== null) {
         setSourceType(v as string);
+        setSource(defaultValues[v as string]);
       }
     });
     (async () => {
@@ -88,44 +87,23 @@ const App = () => {
       <div className="flex">
         <div className="w-[12%]">
           <ul className="menu">
-            <li className="border-b">
-              <select
-                onChange={(e) => {
-                  let value = e.target.value.toLowerCase();
-                  setSourceType(value);
-                  setSource(defaultValues[value]);
-                }}
-              >
-                {info?.source.map((item) => {
-                  return (
-                    <option key={item}>
-                      {item.charAt(0).toUpperCase() + item.slice(1)}
-                    </option>
-                  );
-                })}
-              </select>
-            </li>
-            {info &&
-              Object.entries(info.dest).map((k) => {
-                return k[1].map((type) => {
-                  return (
-                    <li
-                      key={`${k[0]} - ${type}`}
-                      className={
-                        type === destType && k[0] === language ? "bordered" : ""
-                      }
-                      onClick={() => {
-                        setLanguage(k[0]);
-                        setDestType(type);
-                      }}
-                    >
-                      <div className="capitalize">
-                        <LanguageIcons language={k[0] as Language} />
-                        {type === k[0] ? type : `${k[0]} - ${type}`}
-                      </div>
-                    </li>
-                  );
-                });
+            {info?.source &&
+              info.source.map((type) => {
+                return (
+                  <li
+                    key={type}
+                    onClick={() => {
+                      setSourceType(type);
+                      setSource(defaultValues[type]);
+                    }}
+                    className={type === sourceType ? "bordered" : ""}
+                  >
+                    <div className="capitalize">
+                      <SourceTypeIcons sourceType={type as SourceType} />
+                      {type}
+                    </div>
+                  </li>
+                );
               })}
           </ul>
         </div>
@@ -212,6 +190,32 @@ const App = () => {
               language={language}
             />
           </div>
+        </div>
+        <div className="w-[12%] border-l">
+          <ul className="menu">
+            {info?.dest &&
+              Object.entries(info.dest).map((k) => {
+                return k[1].map((type) => {
+                  return (
+                    <li
+                      key={`${k[0]} - ${type}`}
+                      className={
+                        type === destType && k[0] === language ? "bordered" : ""
+                      }
+                      onClick={() => {
+                        setLanguage(k[0]);
+                        setDestType(type);
+                      }}
+                    >
+                      <div className="capitalize">
+                        <LanguageIcons language={k[0] as Language} />
+                        {type === k[0] ? type : `${k[0]} - ${type}`}
+                      </div>
+                    </li>
+                  );
+                });
+              })}
+          </ul>
         </div>
       </div>
     </div>

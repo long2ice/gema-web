@@ -1,4 +1,5 @@
 type Language = "python" | "go" | "rust" | "typescript";
+type SourceType = "json" | "toml" | "xml" | "yaml";
 
 interface Info {
   source: string[];
@@ -9,4 +10,8 @@ interface LanguageProps {
   language: Language;
 }
 
-export type { Info, Language, LanguageProps };
+interface SourceTypeProps {
+  sourceType: SourceType;
+}
+
+export type { Info, Language, LanguageProps, SourceTypeProps, SourceType };
