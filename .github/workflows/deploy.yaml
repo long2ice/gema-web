@@ -13,7 +13,7 @@ jobs:
         run: npm install
       - name: Run build
         env:
-          REACT_APP_API_URL: https://gema-api.long2ice.io
+          REACT_APP_API_URL: /api
         run: npm run build
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
