@@ -22,5 +22,5 @@ jobs:
           access_key: ${{ secrets.MINIO_ACCESS_KEY }}
           secret_key: ${{ secrets.MINIO_SECRET_KEY }}
           bucket: "website"
-          source_dir: "public"
+          source_dir: "build"
           target_dir: "/gema-web"
