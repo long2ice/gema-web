@@ -123,3 +123,4 @@ dist
 .env.production.local
 
 .idea
+.vscode
